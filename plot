@@ -1,9 +1,3 @@
-start game
-populate experience replay memory
-save the graph
-train the graph
-save the graph
-try to play
 
 
 Game
