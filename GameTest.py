@@ -16,11 +16,12 @@ class randomAgent():
 env.reset()
 ra=randomAgent()
 c=False
-for x in range(20000):
+for x in range(20):
     if c==True:
         env.reset()
         c=False
     rds=ra.play()
-    for x in range(1):
-        a,b,c,d=env.step(rds)
+    a,b,c,d=env.step(rds)
+    imgcc = Image.fromarray(a, 'RGB')
+    imgcc.save('im'+str(x)+'g.JPG')
     env.render()
