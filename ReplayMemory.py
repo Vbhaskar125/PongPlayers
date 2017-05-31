@@ -5,15 +5,16 @@ experience=namedtuple('experience','screen reward')
 
 
 
-class ExpMemory():
+class memory():
     def __init__(self,MemLen):
         self.Mem=deque(maxlen=MemLen)
 
     def add(self,screen,reward):
-        if(reward != None & screen !=None):
-            self.Mem.append(experience(screen=screen,reward=reward) )
-        else:
-            print('Incomplete Memory instance')
+        self.Mem.append(experience(screen=screen,reward=reward))
 
     def sample(self):
         return self.Mem.pop()
+
+    def getMemoryCapacity(self):
+        return self.Mem.maxlen
+

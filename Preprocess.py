@@ -17,7 +17,7 @@ def preprocess(image1,image2,image3,image4):
      one=Image.blend(Image.fromarray(processedImg[0], 'L'),Image.fromarray(processedImg[1], 'L'),0.5)
      two=Image.blend(Image.fromarray(processedImg[2], 'L'),Image.fromarray(processedImg[3], 'L'),0.5)
      blendedImg=Image.blend(one,two,0.5)
-     return blendedImg
+     return np.asarray(blendedImg)
 
 
 
