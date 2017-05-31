@@ -16,7 +16,8 @@ class randomAgent():
 env.reset()
 ra=randomAgent()
 c=False
-for x in range(20):
+for x in range(200
+               ):
     if c==True:
         env.reset()
         c=False
