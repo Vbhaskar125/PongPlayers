@@ -1,39 +1,11 @@
-import gym
 import tensorflow as tf
+import gym
 import numpy as np
-import random
-#import QEstimator
-import ReplayMemory
-import Preprocess
+import Qnet
 
-class GameAgent():
-    def __init__(self,envName,MemSize):
-        self.env=gym.make(envName)
-        #self.Qnet=QEstimator.qnet()
-        self.replayMemory=ReplayMemory.memory(MemSize)
-
-    def startEpisode(self):
-        self.env.reset()
-
-    def PopulateReplayMemory(self):
-        NumberofInstances=self.replayMemory.getMemoryCapacity()
-        for instances in range(0,NumberofInstances):
-            screen=reward=Terminated=0
-            screenarr=[]
-            rewardarr=[]
-            self.startEpisode()
-            for x in range(0,4):
-                if Terminated==False:
-                    screen,reward,Terminated,_=self.env.step(self.env.action_space.sample())
-                    screenarr.append(screen)
-                    rewardarr.append(reward)
-                else:
-                    screenarr, rewardarr = []
-                    self.startEpisode()
-            cumulativeReward=np.sum(rewardarr)
-            ProcessedScreen=Preprocess.preprocess(screenarr[0],screenarr[1],screenarr[2],screenarr[3])
-            self.replayMemory.add(screen=ProcessedScreen,reward=cumulativeReward)
-        print('Done')
-
-
-
+sess=tf.Session()
+env=gym.make("Pong-v0")
+pongplayer=Qnet.Qnet(memlen=50000,pathTosaveWeights="/home/pongplayerweights",gamma=0.2,env=env)
+outpt,inpt=pongplayer.buildModel()
+pongplayer.train(numberOfPasses=200000,outpt=outpt,inp=inpt,sess=sess)
+pongplayer.play(sess=sess,outpt=outpt,inp=inpt)

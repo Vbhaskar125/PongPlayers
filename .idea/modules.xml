@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$USER_HOME$/RLWork/Pong/.idea/Pong.iml" filepath="$USER_HOME$/RLWork/Pong/.idea/Pong.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/PongPlayers-master.iml" filepath="$PROJECT_DIR$/.idea/PongPlayers-master.iml" />
+      <module fileurl="file://$USER_HOME$/RLWork/TensorflowTest/.idea/TensorflowTest.iml" filepath="$USER_HOME$/RLWork/TensorflowTest/.idea/TensorflowTest.iml" />
     </modules>
   </component>
 </project>

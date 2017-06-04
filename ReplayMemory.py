@@ -1,20 +1,19 @@
 from collections import deque, namedtuple
-import numpy as np
-
-experience=namedtuple('experience','screen reward')
+import random
 
 
+experience=namedtuple('experience','s_t a_t r s_t1 terminal')
 
 class memory():
-    def __init__(self,MemLen):
-        self.Mem=deque(maxlen=MemLen)
+    def __init__(self,memlen):
+        self.memlen=memlen
+        self.replaymem=deque(maxlen=memlen)
 
-    def add(self,screen,reward):
-        self.Mem.append(experience(screen=screen,reward=reward))
+    def addExperience(self,s_t,a_t,r,s_t1,terminated):
+        self.replaymem.append(experience(s_t,a_t,r,s_t1,terminated))
 
-    def sample(self):
-        return self.Mem.pop()
+    def sampleMemory(self,size):
+        return random.sample(self.replaymem,size)
 
-    def getMemoryCapacity(self):
-        return self.Mem.maxlen
-
+    def getMemCapacity(self):
+        return self.memlen
