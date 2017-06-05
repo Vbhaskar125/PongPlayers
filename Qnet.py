@@ -30,12 +30,12 @@ class Qnet():
         Convlayer1=tf.nn.max_pool(Convlayer1,ksize=[1,2,2,1],strides=[1,2,2 ,1],padding="SAME")
         Convlayer2=tf.nn.relu(tf.nn.conv2d(Convlayer1,self.weights['w2'],strides=[1,2,2,1],padding="SAME")+self.biases['b2'])
         Convlayer3 = tf.nn.relu(tf.nn.conv2d(Convlayer2, self.weights['w3'], strides=[1, 1, 1, 1], padding="SAME")+self.biases['b3'])
-        fcFlat=tf.reshape(Convlayer3,[1,1600])
+        fcFlat=tf.reshape(Convlayer3,[-1,1600])
         FullConnected1=tf.nn.relu(tf.matmul(fcFlat,self.weights['w4'])+self.biases['b4'])
         outpt=tf.matmul(FullConnected1,self.weights['w5'])
         return outpt,inp
 
-    def train(self,numberOfPasses,outpt,inp,sess):
+    def train(self,numberOfPasses,outpt,inp,sess,samplesize):
         #populate the replay memory
         self.env.reset()
         #save the weights
@@ -43,7 +43,7 @@ class Qnet():
         a=self.env.action_space.sample()
         s_0,r_0,t=self.getExperience(a)
         s_0=self.preprocess(s_0[0],s_0[1],s_0[2],s_0[3])
-        s_0 = np.asarray(s_0).reshape([1, 80, 80, 1])
+        s_0 = np.asarray(s_0).reshape([1,80, 80, 1])
         r_0=np.sum(r_0)/4
 
         #populating Memory
@@ -52,26 +52,30 @@ class Qnet():
             pred_act=np.argmax(sess.run(outpt,feed_dict={inp:s_0}))
             s_next,r_next,terminal=self.getExperience(pred_act)
             s_t=self.preprocess(s_next[0],s_next[1],s_next[2],s_next[3])
-            s_t = np.asarray(s_t).reshape([1, 80, 80, 1])
+            s_t = np.asarray(s_t).reshape([1,80, 80, 1])
             self.replaymem.addExperience(s_0,pred_act,r_0,s_t,terminal)
             s_0=s_t
             r_0=np.sum(r_next)/4
 
+        y = tf.placeholder("float", [None,1])
         a = tf.placeholder("float", [None, self.actions])
-        y = tf.placeholder("float", [None])
-        readout_action = tf.reduce_sum(tf.multiply(outpt, a), reduction_indices=1)
-        cost = tf.reduce_mean(tf.square(y - readout_action))
+        #readout_action = tf.reduce_sum(tf.multiply(outpt, a), reduction_indices=1)
+        cost = tf.reduce_mean(tf.square(y - tf.reduce_max(outpt,reduction_indices=[1])))
         train_step = tf.train.AdamOptimizer(1e-6).minimize(cost)
+        #print(sess.run(tf.reduce_max(outpt,reduction_indices=[1])))
 
         #train using the memory and updating it
+        sess.run(tf.global_variables_initializer())
         for x in range(0,numberOfPasses):
-            experienceSample=self.replaymem.sampleMemory(10)
-            sini = [e[0] for e in experienceSample]
+            experienceSample=self.replaymem.sampleMemory(samplesize)
+            sini = [e[0].reshape([80, 80, 1]) for e in experienceSample]
+            sini=np.reshape(sini,[10,80,80,1])
             acini = [e[1] for e in experienceSample]
             rini = [e[2] for e in experienceSample]
             term=[e[4] for e in experienceSample]
             sfin=[e[3] for e in experienceSample]
             yBatch=[]
+            sfin=np.reshape(sfin,[samplesize,80,80,1])
             acfin=sess.run(outpt,feed_dict={inp:sfin})
             for v in range(0,len(experienceSample)):
                 termcheck=term[v]
@@ -82,17 +86,18 @@ class Qnet():
                     nextact=np.argmax(acfin[v])
                     s_next, r_next, terminalnext=self.getExperience(nextact)
                     s_t = self.preprocess(s_next[0], s_next[1], s_next[2], s_next[3])
-                    s_t = np.asarray(s_t).reshape([1, 80, 80, 1])
+                    s_t = np.asarray(s_t).reshape([1,80, 80, 1])
                     self.replaymem.addExperience(sfin[v], nextact, r_next, s_next, terminalnext)
+            print(yBatch)
 
 
-            sess.run(train_step,feed_dict={y:yBatch,a:acini,inp:sini})
+            sess.run(train_step,feed_dict={y:np.reshape(yBatch,[10,1]),inp:sini})
 
             #save weights per 10000 runs
-            if x % 10000 == 0:
-                saver=tf.train.saver()
-                saver.save(sess,str(self.path)+str(x),global_step=x)
-                print('saved '+str(self.path)+str(x)+' instance trained weight')
+            if x % 10 == 0:
+                saver=tf.train.Saver()
+                saver.save(sess,"mymodel",global_step=x)
+                print('saved '+"mymodel"+' instance trained weight')
 
 
 

@@ -25,9 +25,11 @@ sess=tf.Session()
 sess.run(tf.global_variables_initializer())
 print(asd.train(2,opt,inpt,sess))'''
 smpl=rm.sampleMemory(3)
+
 sini=[e[0] for e in smpl]
 acini=[e[1] for e in smpl]
 rini=[e[2] for e in smpl]
 
-print(acini)
-print(rini)
+sini=np.reshape(sini,[3,80,80,1])
+
+print(sini.shape)
